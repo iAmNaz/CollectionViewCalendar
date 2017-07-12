@@ -7,16 +7,40 @@
 //
 
 import UIKit
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func >= <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l >= r
+  default:
+    return !(lhs < rhs)
+  }
+}
+
 
 class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-    let currentCalendar : NSCalendar = NSCalendar.currentCalendar()
-    private var sampleDate : NSDate?
-    private var calendarConfiguration : CalendarConfig?
+    let currentCalendar : Calendar = Calendar.current
+    fileprivate var sampleDate : Date?
+    fileprivate var calendarConfiguration : CalendarConfig?
     
     var layout: UICollectionViewFlowLayout?
     var dayCountInMonth : Int?
     var weekDay : Int?
-    var firstDay : NSDate?
+    var firstDay : Date?
     var firstDayIndex : Int?
     var date : Int = 0
     var collectionViewFrame: CGRect?
@@ -25,8 +49,8 @@ class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegat
     var collectionView : UICollectionView?
     
     //TODO: Collection view, cell subviews, parentcollectionview
-    func configureCalendar(aSampleDate : NSDate, aCalendarConfig : CalendarConfig) {
-        self.layer.borderColor = UIColor.blackColor().CGColor
+    func configureCalendar(_ aSampleDate : Date, aCalendarConfig : CalendarConfig) {
+        self.layer.borderColor = UIColor.black.cgColor
         self.layer.borderWidth = 1
         self.calendarConfiguration = aCalendarConfig;
         self.sampleDate = aSampleDate
@@ -34,11 +58,11 @@ class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegat
         let height = ceil(self.bounds.height/9)
         
         let monthLabel = UILabel()
-        monthLabel.frame = CGRectMake(0, 0, self.bounds.width, height)
+        monthLabel.frame = CGRect(x: 0, y: 0, width: self.bounds.width, height: height)
         monthLabel.text = getMonthName()
-        monthLabel.textAlignment = NSTextAlignment.Center
+        monthLabel.textAlignment = NSTextAlignment.center
         self.addSubview(monthLabel)
-        collectionViewFrame = CGRectMake(0, height, self.bounds.width, self.bounds.height - height)
+        collectionViewFrame = CGRect(x: 0, y: height, width: self.bounds.width, height: self.bounds.height - height)
         
         generateDataSet()
         configureViews()
@@ -47,7 +71,7 @@ class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegat
     func configureViews() {
         if layout == nil {
             layout = UICollectionViewFlowLayout()
-            layout?.sectionInset = UIEdgeInsetsZero
+            layout?.sectionInset = UIEdgeInsets.zero
             layout?.itemSize = CGSize(width: ceil(self.bounds.width/7.2), height: ceil(self.bounds.height/8.1))
             layout?.minimumInteritemSpacing = 0;
             layout?.minimumLineSpacing = 1;
@@ -55,8 +79,8 @@ class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegat
         
         if collectionView == nil {
             collectionView = UICollectionView(frame: collectionViewFrame!, collectionViewLayout: layout!)
-            collectionView?.registerClass(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-            collectionView?.backgroundColor = UIColor.whiteColor()
+            collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+            collectionView?.backgroundColor = UIColor.white
             collectionView?.delegate = self;
             collectionView?.dataSource = self;
             self.addSubview(self.collectionView!)
@@ -75,41 +99,41 @@ class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegat
     
     //MARK: Private Helpers
     func getWeekday() -> Int {
-        let calendar = NSCalendar.currentCalendar()
+        let calendar = Calendar.current
 
-        let firstDayComponents = calendar.components( [NSCalendarUnit.Year , NSCalendarUnit.Month , NSCalendarUnit.Day , NSCalendarUnit.Weekday], fromDate: self.sampleDate!)
-        return firstDayComponents.weekday
+        let firstDayComponents = (calendar as NSCalendar).components( [NSCalendar.Unit.year , NSCalendar.Unit.month , NSCalendar.Unit.day , NSCalendar.Unit.weekday], from: self.sampleDate!)
+        return firstDayComponents.weekday!
     }
 
     func getMonthName() -> String {
-        let dateFormatter = NSDateFormatter()
+        let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM"
-        let monthName =  dateFormatter.stringFromDate(self.sampleDate!)
+        let monthName =  dateFormatter.string(from: self.sampleDate!)
 
         return monthName
     }
     
     func getDayCountInMonth() -> Int {
-        let days = currentCalendar.rangeOfUnit(NSCalendarUnit.Day, inUnit: NSCalendarUnit.Month, forDate: self.sampleDate!)
+        let days = (currentCalendar as NSCalendar).range(of: NSCalendar.Unit.day, in: NSCalendar.Unit.month, for: self.sampleDate!)
         return days.length
     }
     
-    func getFirstDay() -> NSDate {
-        let gregorian = NSCalendar(calendarIdentifier: NSCalendarIdentifierGregorian)
-        let components = gregorian!.components([NSCalendarUnit.Era, NSCalendarUnit.Year, NSCalendarUnit.Month , NSCalendarUnit.Weekday], fromDate: self.sampleDate!)
+    func getFirstDay() -> Date {
+        let gregorian = Calendar(identifier: Calendar.Identifier.gregorian)
+        var components = (gregorian as NSCalendar).components([NSCalendar.Unit.era, NSCalendar.Unit.year, NSCalendar.Unit.month , NSCalendar.Unit.weekday], from: self.sampleDate!)
         components.day = 1
-        return gregorian!.dateFromComponents(components)!
+        return gregorian.date(from: components)!
     }
     
     //MARK: UICollectionView DataSource
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return 56;
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        let cell: UICollectionViewCell = collectionView.dequeueReusableCellWithReuseIdentifier("cell", forIndexPath: indexPath)
-        cell.contentView.backgroundColor = UIColor.lightGrayColor()
+        let cell: UICollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+        cell.contentView.backgroundColor = UIColor.lightGray
     
         var label : UILabel? = cell.contentView.viewWithTag(1) as? UILabel;
         
@@ -117,13 +141,13 @@ class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegat
             let alabel : UILabel = UILabel();
             alabel.tag = 1;
             alabel.frame = cell.bounds;
-            alabel.textAlignment = .Center;
-            alabel.userInteractionEnabled = false;
+            alabel.textAlignment = .center;
+            alabel.isUserInteractionEnabled = false;
             cell.contentView.addSubview(alabel)
             label = alabel
         }
         
-        let recognizer = UITapGestureRecognizer(target: self, action:Selector("handleTap"))
+        let recognizer = UITapGestureRecognizer(target: self, action:#selector(MonthCalendar.handleTap))
         // 4
         cell.contentView.addGestureRecognizer(recognizer)
         
@@ -133,7 +157,7 @@ class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegat
         
         if indexPath.row >= self.firstDayIndex {
             if self.date < self.dayCountInMonth! {
-                self.date++
+                self.date += 1
                 let stringValue = "\(self.date)"
                 label?.text = String(stringValue)
             }
@@ -146,11 +170,11 @@ class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegat
     }
     
     //Mark: UICollectionView Delegate
-    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("didSelectItemAtIndexPath")
     }
     
-    func collectionView(collectionView: UICollectionView, didHighlightItemAtIndexPath indexPath: NSIndexPath){
+    func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath){
         print("didHighlightItemAtIndexPath")
     }
 

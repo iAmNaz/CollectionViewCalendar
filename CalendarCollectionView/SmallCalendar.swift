@@ -12,7 +12,7 @@ class SmallCalendar: NSObject, CalendarConfig {
     var itemSize : CGSize?
     
     override init(){
-        itemSize = CGSizeMake(14, 14);
+        itemSize = CGSize(width: 14, height: 14);
     }
     
     func getItemSize()->CGSize {
