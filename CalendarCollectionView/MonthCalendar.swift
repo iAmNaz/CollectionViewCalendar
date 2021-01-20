@@ -49,7 +49,7 @@ class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegat
     var collectionView : UICollectionView?
     
     //TODO: Collection view, cell subviews, parentcollectionview
-    func configureCalendar(_ aSampleDate : Date, aCalendarConfig : CalendarConfig) {
+    @objc func configureCalendar(_ aSampleDate : Date, aCalendarConfig : CalendarConfig) {
         self.layer.borderColor = UIColor.black.cgColor
         self.layer.borderWidth = 1
         self.calendarConfiguration = aCalendarConfig;
@@ -165,7 +165,7 @@ class MonthCalendar: UIView, UICollectionViewDataSource, UICollectionViewDelegat
         return cell;
     }
     
-    func handleTap () {
+    @objc func handleTap () {
         print("handleTap")
     }
     
